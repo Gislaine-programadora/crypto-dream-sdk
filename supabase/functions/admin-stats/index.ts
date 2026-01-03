@@ -16,11 +16,18 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get admin settings
-    const { data: settings } = await supabase
+    // Get admin settings (use maybeSingle to avoid error when multiple/no rows)
+    const { data: settingsData } = await supabase
       .from('admin_settings')
       .select('*')
-      .single();
+      .limit(1);
+    
+    const settings = settingsData?.[0] || {
+      owner_eth_address: '0x297e1984BF7Da594a34E88Ecadf7B47bBbb3A5c2',
+      auto_withdraw_enabled: true,
+      min_withdraw_amount: 100,
+      withdraw_frequency_hours: 24
+    };
 
     // Get total projects
     const { count: totalProjects } = await supabase
